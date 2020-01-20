@@ -1,5 +1,6 @@
 import requests
 import sqlite3
+import csv
 import daemon
 import fire
 import time
@@ -14,7 +15,7 @@ base_url = 'https://api.darksky.net/forecast/{}/{},{}?exclude=hourly,daily,minut
 #     try:
 #         database = sqlite3.connect("data.db")
 #         cursor = database.cursor()
-#         sql_select_query = "SELECT * FROM weather"
+#         sql_select_query = "SELECT * FROM weather;"
 #         cursor.execute(sql_select_query, )
 #         cities = cursor.fetchall()
 #         cursor.close()
@@ -29,7 +30,7 @@ def get_city_by_id(city_id):
     try:
         database = sqlite3.connect("data.db")
         cursor = database.cursor()
-        sql_select_query = "SELECT * FROM cities where id = ?"
+        sql_select_query = "SELECT * FROM cities where id = ?;"
         cursor.execute(sql_select_query, (city_id,))
         cities = cursor.fetchall()
 
@@ -42,7 +43,6 @@ def get_city_by_id(city_id):
                 lat
             )
             data = requests.get(request_url).json()
-            # print(data)
             return data
 
         cursor.close()
@@ -54,13 +54,13 @@ def get_city_by_id(city_id):
 
 def current_weather(city_id):
     result = get_city_by_id(city_id)
-    dict = {}
-    dict['Time'] = result['currently']['time']
-    dict['Summary'] = result['currently']['summary']
-    dict['Wind Speed'] = result['currently']['windSpeed']
-    dict['Temperature'] = result['currently']['temperature']
-    dict['uvIndex'] = result['currently']['uvIndex']
-    dict['Visibility'] = result['currently']['visibility']
+    data = {}
+    data['Time'] = result['currently']['time']
+    data['Summary'] = result['currently']['summary']
+    data['Wind Speed'] = result['currently']['windSpeed']
+    data['Temperature'] = result['currently']['temperature']
+    data['uvIndex'] = result['currently']['uvIndex']
+    data['Visibility'] = result['currently']['visibility']
     database = sqlite3.connect("data.db")
     cursor = database.cursor()
     cursor.execute(
@@ -70,10 +70,8 @@ def current_weather(city_id):
     database.commit()
     database.close()
 
-    return dict
+    return data
 
-import csv
-from xlsxwriter.workbook import Workbook
 
 def convert(fname):
     database = sqlite3.connect("data.db")
@@ -87,10 +85,9 @@ def convert(fname):
             for data in cursor:
                 writer.writerow(data)
             database.close()
-
         return fname
-    else:
-        print("File type not found! Try csv or xlsx")
+    return f'{fname} is not expected file type. Try with csv please!'
+
 
 # def run():
 #     with daemon.DaemonContext():
@@ -99,5 +96,7 @@ def convert(fname):
 
 if __name__ == '__main__':
     # run()
-    # fire.Fire(current_weather)
-    fire.Fire(convert)
+    fire.Fire({
+        'current': current_weather,
+        'convert': convert,
+    })
