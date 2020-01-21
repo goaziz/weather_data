@@ -4,7 +4,7 @@ import csv
 import fire
 import time
 
-API_KEY = '85b6c7a69e371c6820aa44273521292f'
+API_KEY = 'b01ccd17bff2c0a949bc03ca19c56101'
 
 base_url = 'https://api.darksky.net/forecast/{}/{},{}'
 
@@ -37,7 +37,7 @@ def get_all_information():
         data['Visibility'] = result['currently']['visibility']
 
         cursor.execute(
-            "INSERT INTO weather (updated_at, summary, windSpeed, temperature, uvIndex, visibility, city_id) VALUES (?, ?, ?, ?, ?, ?, ?);",
+            "INSERT INTO weather (time, summary, windSpeed, temperature, uvIndex, visibility, city_id) VALUES (?, ?, ?, ?, ?, ?, ?);",
             (result['currently']['time'], result['currently']['summary'], result['currently']['windSpeed'],
              result['currently']['temperature'], result['currently']['uvIndex'], result['currently']['visibility'],
              city[0]))
@@ -54,7 +54,7 @@ def get_weather_by_city_id(city_id):
     try:
         database = sqlite3.connect("data.db")
         cursor = database.cursor()
-        sql_select_query = "SELECT * FROM weather where city_id = ? AND updated_at < DATETIME('now', '-10 minute');"
+        sql_select_query = "SELECT * FROM weather where city_id = ? AND time < DATETIME('now', '-10 minute');"
         cursor.execute(sql_select_query, (city_id,))
         cities_weather = cursor.fetchall()
         database.commit()
