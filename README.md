@@ -1,4 +1,4 @@
-## Weather Data
+## Weather Information from Dark Sky
 
 This is a script to collect weather information from Dark Sky https://darksky.net/dev
 
